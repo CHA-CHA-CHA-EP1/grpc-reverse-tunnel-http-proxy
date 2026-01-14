@@ -1,3 +1,4 @@
+use actix_cors::Cors;
 use actix_web::{App, HttpServer, web};
 use grpc_server::{TunnelImpl, handlers, tunnel};
 use std::time::Duration;
@@ -28,7 +29,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("Starting Http server on {}", http_addr);
 
     HttpServer::new(move || {
+        let cors = Cors::default()
+            .allow_any_origin()
+            .allow_any_method()
+            .allow_any_header();
+
         App::new()
+            .wrap(cors)
             .app_data(web::Data::new(tunnel_for_http.clone()))
             .route(
                 "/api/health-check",
