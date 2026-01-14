@@ -1,5 +1,6 @@
 use actix_web::{App, HttpServer, web};
 use grpc_server::{TunnelImpl, handlers, tunnel};
+use std::time::Duration;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -13,6 +14,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     tokio::spawn(async move {
         tonic::transport::Server::builder()
+            .http2_keepalive_interval(Some(Duration::from_secs(30)))
+            .http2_keepalive_timeout(Some(Duration::from_secs(10)))
+            .tcp_keepalive(Some(Duration::from_secs(30)))
             .add_service(tunnel::tunnel_service_server::TunnelServiceServer::new(
                 tunnel_for_grpc,
             ))
